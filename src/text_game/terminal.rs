@@ -73,7 +73,7 @@ fn setup_terminal(mut commands: Commands, asset_server: Res<AssetServer>) {
                 .spawn((
                     Node {
                         width: Val::Percent(100.0),
-                        height: Val::Percent(90.0),
+                        height: Val::Percent(85.0),
                         max_width: Val::Px(1200.0),
                         flex_direction: FlexDirection::Column,
                         overflow: Overflow::scroll_y(),
@@ -100,7 +100,7 @@ fn setup_terminal(mut commands: Commands, asset_server: Res<AssetServer>) {
                         TypewriterEffect {
                             full_text: "Initializing NEON VEDEY...".to_string(),
                             current_index: 0,
-                            timer: Timer::from_seconds(0.005, TimerMode::Repeating),
+                            timer: Timer::from_seconds(0.0008, TimerMode::Repeating),
                             complete: false,
                         },
                     ));
@@ -204,15 +204,35 @@ fn ui_render_system(
             display_text.push_str("│  3) Quit                    │\n");
             display_text.push_str("└─────────────────────────────┘\n");
         } else {
-            display_text.push_str("┌─ CHOICES ─────────────────────┐\n");
+            // Find the max width needed for choices
+            let max_width = node.choices.iter()
+                .map(|c| c.text.len())
+                .max()
+                .unwrap_or(0)
+                .min(65); // Cap at 65 chars wide for better readability
+
+            let box_width = max_width + 6; // Add padding for number and spaces
+            let top_border = format!("┌─ CHOICES {}┐\n", "─".repeat(box_width.saturating_sub(11)));
+            let bottom_border = format!("└{}┘\n", "─".repeat(box_width));
+
+            display_text.push_str(&top_border);
             for (i, choice) in node.choices.iter().enumerate() {
+                // Wrap long text properly
+                let text = if choice.text.len() > max_width {
+                    let mut wrapped = choice.text.chars().take(max_width - 3).collect::<String>();
+                    wrapped.push_str("...");
+                    wrapped
+                } else {
+                    choice.text.to_string()
+                };
                 display_text.push_str(&format!(
-                    "│ {}) {} │\n",
+                    "│ {}) {:<width$} │\n",
                     i + 1,
-                    format!("{:<27}", choice.text.chars().take(27).collect::<String>())
+                    text,
+                    width = max_width
                 ));
             }
-            display_text.push_str("└───────────────────────────────┘\n");
+            display_text.push_str(&bottom_border);
         }
 
         let unlocked = game.endings_unlocked.len();
