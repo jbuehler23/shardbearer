@@ -25,7 +25,7 @@ fn spawn_title_text(mut commands: Commands) {
     .with_children(|parent| {
         // Main title
         parent.spawn((
-            Text("NEON VEDEY".to_string()),
+            Text("SHARDBEARER".to_string()),
             TextFont {
                 font_size: 72.0,
                 ..default()
@@ -35,7 +35,7 @@ fn spawn_title_text(mut commands: Commands) {
 
         // Subtitle
         parent.spawn((
-            Text("Neural Shadows".to_string()),
+            Text("A New Carthage Story".to_string()),
             TextFont {
                 font_size: 24.0,
                 ..default()

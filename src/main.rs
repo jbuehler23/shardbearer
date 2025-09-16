@@ -34,7 +34,7 @@ impl Plugin for AppPlugin {
                 })
                 .set(WindowPlugin {
                     primary_window: Window {
-                        title: "NEON VEDEY - Neural Shadows".to_string(),
+                        title: "Shardbearer: A New Carthage Story".to_string(),
                         fit_canvas_to_parent: true,
                         ..default()
                     }

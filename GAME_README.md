@@ -1,6 +1,8 @@
-# NEON VEDEY - Neural Shadows
+# Shardbearer: A New Carthage Story
 
 A cyberpunk text-based adventure game built with Bevy.
+
+The first story in the New Carthage universe, follow the journey of a runner carrying stolen data through the neon-lit streets of a corporate dystopia.
 
 ## Story
 

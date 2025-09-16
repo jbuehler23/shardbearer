@@ -84,7 +84,7 @@ fn setup_terminal(mut commands: Commands, asset_server: Res<AssetServer>) {
                 .with_children(|scroll| {
                     // Game text display with typewriter effect
                     scroll.spawn((
-                        Text("Initializing NEON VEDEY...".to_string()),
+                        Text("Initializing SHARDBEARER...".to_string()),
                         TextFont {
                             font: asset_server.load("fonts/FiraCode-Regular.ttf"),
                             font_size: 14.0,
@@ -98,7 +98,7 @@ fn setup_terminal(mut commands: Commands, asset_server: Res<AssetServer>) {
                         },
                         GameTextDisplay,
                         TypewriterEffect {
-                            full_text: "Initializing NEON VEDEY...".to_string(),
+                            full_text: "Initializing SHARDBEARER...".to_string(),
                             current_index: 0,
                             timer: Timer::from_seconds(0.0008, TimerMode::Repeating),
                             complete: false,
@@ -171,8 +171,12 @@ fn ui_render_system(
     }
 
     let mut display_text = String::new();
-    display_text.push_str(&BANNER);
-    display_text.push_str("\n\n");
+
+    // Only show banner on the start screen
+    if game.current == "start" {
+        display_text.push_str(&BANNER);
+        display_text.push_str("\n\n");
+    }
 
     if let Some(node) = story.nodes.get(game.current) {
         if let Some(ascii) = node.ascii {
