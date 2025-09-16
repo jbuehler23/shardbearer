@@ -22,6 +22,8 @@ pub struct GameUI {
     pub display_text: String,
     pub input_buffer: String,
     pub awaiting_input: bool,
+    pub selected_choice: Option<usize>,
+    pub num_choices: usize,
 }
 
 pub fn plugin(app: &mut App) {

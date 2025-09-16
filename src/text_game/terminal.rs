@@ -15,6 +15,27 @@ pub struct GameTextDisplay;
 pub struct InputPrompt;
 
 #[derive(Component)]
+pub struct ContentSection {
+    pub section_type: ContentType,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub enum ContentType {
+    Banner,
+    StoryText,
+    Choices,
+    Messages,
+}
+
+#[derive(Component)]
+pub struct ChoiceItem {
+    pub index: usize,
+}
+
+#[derive(Component)]
+pub struct ScrollContainer;
+
+#[derive(Component)]
 pub struct TerminalContainer;
 
 #[derive(Component)]
@@ -68,7 +89,7 @@ fn setup_terminal(mut commands: Commands, asset_server: Res<AssetServer>) {
             BackgroundColor(Color::srgb(0.01, 0.01, 0.05)), // Very dark blue-black
         ))
         .with_children(|parent| {
-            // Scrollable game text area
+            // Scrollable game content area
             parent
                 .spawn((
                     Node {
@@ -80,9 +101,10 @@ fn setup_terminal(mut commands: Commands, asset_server: Res<AssetServer>) {
                         ..default()
                     },
                     BackgroundColor(Color::srgba(0.0, 0.02, 0.05, 0.9)),
+                    ScrollContainer,
                 ))
                 .with_children(|scroll| {
-                    // Game text display with typewriter effect
+                    // Content will be dynamically added here
                     scroll.spawn((
                         Text("Initializing SHARDBEARER...".to_string()),
                         TextFont {
@@ -91,16 +113,17 @@ fn setup_terminal(mut commands: Commands, asset_server: Res<AssetServer>) {
                             font_smoothing: default(),
                             line_height: LineHeight::RelativeToFont(1.2),
                         },
-                        TextColor(Color::srgb(0.0, 1.0, 0.8)), // Cyan text
+                        TextColor(Color::srgb(0.0, 1.0, 0.8)),
                         Node {
                             padding: UiRect::all(Val::Px(15.0)),
+                            min_height: Val::Px(600.0), // Force minimum height for overflow
                             ..default()
                         },
                         GameTextDisplay,
                         TypewriterEffect {
                             full_text: "Initializing SHARDBEARER...".to_string(),
                             current_index: 0,
-                            timer: Timer::from_seconds(0.0008, TimerMode::Repeating),
+                            timer: Timer::from_seconds(0.001, TimerMode::Repeating), // Fast but visible
                             complete: false,
                         },
                     ));
@@ -161,6 +184,7 @@ fn setup_terminal(mut commands: Commands, asset_server: Res<AssetServer>) {
 fn ui_render_system(
     story: Res<Story>,
     mut game: ResMut<Game>,
+    mut ui: ResMut<GameUI>,
     mut text_query: Query<
         (&mut Text, Option<&mut TypewriterEffect>),
         (With<GameTextDisplay>, Without<InputPrompt>),
@@ -170,6 +194,7 @@ fn ui_render_system(
         return;
     }
 
+    // Clear selection state when starting a new render
     let mut display_text = String::new();
 
     // Only show banner on the start screen
@@ -219,6 +244,9 @@ fn ui_render_system(
             let top_border = format!("┌─ CHOICES {}┐\n", "─".repeat(box_width.saturating_sub(11)));
             let bottom_border = format!("└{}┘\n", "─".repeat(box_width));
 
+            // Update UI state for choices
+            ui.num_choices = node.choices.len();
+
             display_text.push_str(&top_border);
             for (i, choice) in node.choices.iter().enumerate() {
                 // Wrap long text properly
@@ -229,14 +257,28 @@ fn ui_render_system(
                 } else {
                     choice.text.to_string()
                 };
+
+                // Highlight selected choice
+                let is_selected = ui.selected_choice == Some(i);
+                let prefix = if is_selected { "► " } else { "  " };
+                let choice_text = if is_selected {
+                    format!("{}[{}] {}", prefix, i + 1, text)
+                } else {
+                    format!("{}{}) {}", prefix, i + 1, text)
+                };
+
                 display_text.push_str(&format!(
-                    "│ {}) {:<width$} │\n",
-                    i + 1,
-                    text,
-                    width = max_width
+                    "│{:<width$}│\n",
+                    choice_text,
+                    width = max_width + 4
                 ));
             }
             display_text.push_str(&bottom_border);
+
+            // Add selection hint if a choice is selected
+            if ui.selected_choice.is_some() {
+                display_text.push_str("\n💡 Press ENTER to confirm selection, ESC to cancel\n");
+            }
         }
 
         let unlocked = game.endings_unlocked.len();
@@ -254,12 +296,20 @@ fn ui_render_system(
     // Update display text with typewriter effect
     if let Ok((mut text, typewriter)) = text_query.single_mut() {
         if let Some(mut effect) = typewriter {
-            // Only reset if the text actually changed
-            if effect.full_text != display_text {
+            // For selection changes, update the full text but keep the animation state
+            // Only reset animation for actual content changes (not selection highlights)
+            let content_changed = !effect.full_text.contains(&display_text[..display_text.len().min(50)]);
+
+            if content_changed {
+                // Content actually changed - reset typewriter
                 effect.full_text = display_text.clone();
                 effect.current_index = 0;
                 effect.complete = false;
                 effect.timer.reset();
+            } else if effect.complete {
+                // Selection change only - update immediately without animation
+                text.0 = display_text.clone();
+                effect.full_text = display_text.clone();
             }
         } else {
             text.0 = display_text;
@@ -276,6 +326,7 @@ fn terminal_input_system(
     mut keyboard_events: MessageReader<KeyboardInput>,
     mut input_events: MessageWriter<InputEvent>,
     mut ui: ResMut<GameUI>,
+    mut game: ResMut<Game>,
     keys: Res<ButtonInput<KeyCode>>,
 ) {
     for event in keyboard_events.read() {
@@ -285,26 +336,74 @@ fn terminal_input_system(
 
         match event.key_code {
             KeyCode::Enter => {
-                if !ui.input_buffer.trim().is_empty() {
+                // Check if we have a selected choice
+                if let Some(choice_index) = ui.selected_choice {
+                    input_events.write(InputEvent((choice_index + 1).to_string()));
+                    ui.selected_choice = None;
+                } else if !ui.input_buffer.trim().is_empty() {
                     let input = ui.input_buffer.trim().to_string();
                     input_events.write(InputEvent(input));
                     ui.input_buffer.clear();
+                }
+            }
+            KeyCode::Escape => {
+                ui.selected_choice = None;
+                game.should_redraw = true;
+            }
+            KeyCode::ArrowUp => {
+                if ui.num_choices > 0 {
+                    ui.selected_choice = Some(match ui.selected_choice {
+                        Some(i) if i > 0 => i - 1,
+                        Some(_) => ui.num_choices - 1, // Wrap to last (covers i == 0 and any other case)
+                        None => ui.num_choices - 1,
+                    });
+                    game.should_redraw = true;
+                }
+            }
+            KeyCode::ArrowDown => {
+                if ui.num_choices > 0 {
+                    ui.selected_choice = Some(match ui.selected_choice {
+                        Some(i) if i < ui.num_choices - 1 => i + 1,
+                        Some(_) => 0, // Wrap to first
+                        None => 0,
+                    });
+                    game.should_redraw = true;
                 }
             }
             KeyCode::Backspace => {
                 ui.input_buffer.pop();
             }
             KeyCode::Digit1 | KeyCode::Numpad1 => {
-                input_events.write(InputEvent("1".to_string()));
+                if ui.num_choices > 0 {
+                    ui.selected_choice = Some(0);
+                    game.should_redraw = true;
+                } else {
+                    input_events.write(InputEvent("1".to_string()));
+                }
             }
             KeyCode::Digit2 | KeyCode::Numpad2 => {
-                input_events.write(InputEvent("2".to_string()));
+                if ui.num_choices > 1 {
+                    ui.selected_choice = Some(1);
+                    game.should_redraw = true;
+                } else {
+                    input_events.write(InputEvent("2".to_string()));
+                }
             }
             KeyCode::Digit3 | KeyCode::Numpad3 => {
-                input_events.write(InputEvent("3".to_string()));
+                if ui.num_choices > 2 {
+                    ui.selected_choice = Some(2);
+                    game.should_redraw = true;
+                } else {
+                    input_events.write(InputEvent("3".to_string()));
+                }
             }
             KeyCode::Digit4 | KeyCode::Numpad4 => {
-                input_events.write(InputEvent("4".to_string()));
+                if ui.num_choices > 3 {
+                    ui.selected_choice = Some(3);
+                    game.should_redraw = true;
+                } else {
+                    input_events.write(InputEvent("4".to_string()));
+                }
             }
             KeyCode::Space => {
                 ui.input_buffer.push(' ');
