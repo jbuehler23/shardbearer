@@ -219,6 +219,9 @@ fn ui_render_system(
         display_text.push_str("\n");
 
         if let Some(end) = &node.ending {
+            // Set number of choices for ending screen
+            ui.num_choices = 3;
+
             display_text.push_str("╔════════════════════════════════════════╗\n");
             display_text.push_str(&format!(
                 "║  ENDING UNLOCKED: {}  ║\n",
@@ -226,15 +229,39 @@ fn ui_render_system(
             ));
             display_text.push_str("╚════════════════════════════════════════╝\n\n");
             display_text.push_str(&format!("{}\n\n", end.summary));
+
+            // Build ending choices with selection highlighting
             display_text.push_str("┌─────────────────────────────┐\n");
             display_text.push_str("│  What now?                  │\n");
-            display_text.push_str("│  1) Reboot from the alley   │\n");
-            display_text.push_str("│  2) Show unlocked endings   │\n");
-            display_text.push_str("│  3) Quit                    │\n");
+
+            let ending_choices = vec![
+                "Reboot from the alley",
+                "Show unlocked endings",
+                "Quit"
+            ];
+
+            for (i, choice_text) in ending_choices.iter().enumerate() {
+                let is_selected = ui.selected_choice == Some(i);
+                let prefix = if is_selected { "► " } else { "  " };
+                let formatted = if is_selected {
+                    format!("│{}[{}] {:<23}│\n", prefix, i + 1, choice_text)
+                } else {
+                    format!("│{}{}) {:<23}│\n", prefix, i + 1, choice_text)
+                };
+                display_text.push_str(&formatted);
+            }
+
             display_text.push_str("└─────────────────────────────┘\n");
+
+            // Add selection hint if a choice is selected
+            if ui.selected_choice.is_some() {
+                display_text.push_str("\n▶ Press ENTER to confirm selection, ESC to cancel\n");
+            }
         } else {
             // Find the max width needed for choices
-            let max_width = node.choices.iter()
+            let max_width = node
+                .choices
+                .iter()
                 .map(|c| c.text.len())
                 .max()
                 .unwrap_or(0)
@@ -277,7 +304,9 @@ fn ui_render_system(
 
             // Add selection hint if a choice is selected
             if ui.selected_choice.is_some() {
-                display_text.push_str("\n💡 Press ENTER to confirm selection, ESC to cancel\n");
+                display_text.push_str("\n▶ Press ENTER to confirm selection, ESC to cancel\n");
+            } else {
+                display_text.push_str("\n💡 Hold SPACE to skip text animation\n");
             }
         }
 
@@ -298,7 +327,9 @@ fn ui_render_system(
         if let Some(mut effect) = typewriter {
             // For selection changes, update the full text but keep the animation state
             // Only reset animation for actual content changes (not selection highlights)
-            let content_changed = !effect.full_text.contains(&display_text[..display_text.len().min(50)]);
+            let content_changed = !effect
+                .full_text
+                .contains(&display_text[..display_text.len().min(50)]);
 
             if content_changed {
                 // Content actually changed - reset typewriter
@@ -546,25 +577,40 @@ fn cursor_blink_system(
     }
 }
 
-fn typewriter_effect_system(time: Res<Time>, mut query: Query<(&mut Text, &mut TypewriterEffect)>) {
+fn typewriter_effect_system(
+    time: Res<Time>,
+    keys: Res<ButtonInput<KeyCode>>,
+    mut query: Query<(&mut Text, &mut TypewriterEffect)>
+) {
     for (mut text, mut effect) in query.iter_mut() {
         if !effect.complete {
-            effect.timer.tick(time.delta());
-            if effect.timer.just_finished() {
-                // Use char_indices to handle Unicode properly
-                let chars: Vec<_> = effect.full_text.char_indices().collect();
-                effect.current_index = (effect.current_index + 1).min(chars.len());
+            // Check if Space is held for speed-up
+            let speed_up = keys.pressed(KeyCode::Space);
 
-                let visible_text = if effect.current_index >= chars.len() {
-                    effect.full_text.clone()
-                } else {
-                    let end_byte_index = chars[effect.current_index].0;
-                    effect.full_text[..end_byte_index].to_string()
-                };
+            // If Space is held, skip to the end instantly
+            if speed_up {
+                text.0 = effect.full_text.clone();
+                effect.complete = true;
+                effect.current_index = effect.full_text.len();
+            } else {
+                // Normal typewriter effect
+                effect.timer.tick(time.delta());
+                if effect.timer.just_finished() {
+                    // Use char_indices to handle Unicode properly
+                    let chars: Vec<_> = effect.full_text.char_indices().collect();
+                    effect.current_index = (effect.current_index + 1).min(chars.len());
 
-                text.0 = visible_text;
-                if effect.current_index >= chars.len() {
-                    effect.complete = true;
+                    let visible_text = if effect.current_index >= chars.len() {
+                        effect.full_text.clone()
+                    } else {
+                        let end_byte_index = chars[effect.current_index].0;
+                        effect.full_text[..end_byte_index].to_string()
+                    };
+
+                    text.0 = visible_text;
+                    if effect.current_index >= chars.len() {
+                        effect.complete = true;
+                    }
                 }
             }
         }
