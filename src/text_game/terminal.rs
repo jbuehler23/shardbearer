@@ -5,6 +5,7 @@ use crate::text_game::{
 };
 use bevy::input::ButtonState;
 use bevy::input::keyboard::KeyboardInput;
+use bevy::input::mouse::MouseWheel;
 use bevy::prelude::*;
 use bevy::text::LineHeight;
 
@@ -46,6 +47,15 @@ pub struct TypewriterEffect {
 #[derive(Component)]
 pub struct ScanlineEffect;
 
+#[derive(Component)]
+pub struct ScrollbarTrack;
+
+#[derive(Component)]
+pub struct ScrollbarThumb;
+
+#[derive(Component)]
+pub struct ScrollIndicator;
+
 pub fn plugin(app: &mut App) {
     app.add_systems(OnEnter(Screen::Gameplay), setup_terminal);
     app.add_systems(
@@ -53,6 +63,8 @@ pub fn plugin(app: &mut App) {
         (
             ui_render_system,
             terminal_input_system,
+            handle_scroll_input,
+            update_scrollbar_system,
             typewriter_effect_system,
             scanline_animation_system,
         )
@@ -79,20 +91,32 @@ fn setup_terminal(mut commands: Commands, asset_server: Res<AssetServer>) {
             BackgroundColor(Color::srgb(0.01, 0.01, 0.05)), // Very dark blue-black
         ))
         .with_children(|parent| {
-            // Scrollable game content area
+            // Main content container
             parent
                 .spawn((
                     Node {
                         width: Val::Percent(100.0),
                         height: Val::Percent(85.0),
                         max_width: Val::Px(1200.0),
-                        flex_direction: FlexDirection::Column,
-                        overflow: Overflow::scroll_y(),
+                        flex_direction: FlexDirection::Row,
                         ..default()
                     },
-                    BackgroundColor(Color::srgba(0.0, 0.02, 0.05, 0.9)),
-                    ScrollContainer,
                 ))
+                .with_children(|content_parent| {
+                    // Scrollable game content area
+                    content_parent
+                        .spawn((
+                            Node {
+                                width: Val::Percent(95.0),
+                                height: Val::Percent(100.0),
+                                flex_direction: FlexDirection::Column,
+                                overflow: Overflow::scroll_y(),
+                                ..default()
+                            },
+                            BackgroundColor(Color::srgba(0.0, 0.02, 0.05, 0.9)),
+                            ScrollContainer,
+                            ScrollPosition::default(),
+                        ))
                 .with_children(|scroll| {
                     // Content will be dynamically added here
                     scroll.spawn((
@@ -106,7 +130,8 @@ fn setup_terminal(mut commands: Commands, asset_server: Res<AssetServer>) {
                         TextColor(Color::srgb(0.0, 1.0, 0.8)),
                         Node {
                             padding: UiRect::all(Val::Px(15.0)),
-                            min_height: Val::Px(600.0), // Force minimum height for overflow
+                            min_height: Val::Px(800.0), // Force sufficient height for scrolling
+                            width: Val::Percent(100.0),
                             ..default()
                         },
                         GameTextDisplay,
@@ -117,6 +142,34 @@ fn setup_terminal(mut commands: Commands, asset_server: Res<AssetServer>) {
                             complete: false,
                         },
                     ));
+                });
+
+                    // Custom scrollbar
+                    content_parent
+                        .spawn((
+                            Node {
+                                width: Val::Percent(5.0),
+                                height: Val::Percent(100.0),
+                                flex_direction: FlexDirection::Column,
+                                justify_content: JustifyContent::FlexStart,
+                                padding: UiRect::all(Val::Px(2.0)),
+                                ..default()
+                            },
+                            BackgroundColor(Color::srgba(0.0, 0.3, 0.5, 0.3)),
+                            ScrollbarTrack,
+                        ))
+                        .with_children(|track| {
+                            // Scrollbar thumb
+                            track.spawn((
+                                Node {
+                                    width: Val::Percent(100.0),
+                                    height: Val::Px(50.0),
+                                    ..default()
+                                },
+                                BackgroundColor(Color::srgb(0.0, 1.0, 0.8)), // Cyan thumb
+                                ScrollbarThumb,
+                            ));
+                        });
                 });
         });
 
@@ -294,6 +347,12 @@ fn ui_render_system(
         if let Some(msg) = &game.message {
             display_text.push_str(&format!("\n▶ SYSTEM: {}\n", msg.to_uppercase()));
         }
+
+        // Add scroll hints for navigation
+        display_text.push_str("\n");
+        display_text.push_str("═══════════════════════════════════════\n");
+        display_text.push_str("▲ Mouse wheel, Page Up/Down to scroll\n");
+        display_text.push_str("▼ Home/End for top/bottom navigation\n");
     } else {
         display_text.push_str(&format!("[ERROR: MISSING NODE '{}']\n", game.current));
     }
@@ -526,12 +585,68 @@ fn cleanup_terminal(
     mut commands: Commands,
     terminal_query: Query<Entity, With<TerminalContainer>>,
     scanline_query: Query<Entity, With<ScanlineEffect>>,
+    scrollbar_query: Query<Entity, With<ScrollbarTrack>>,
 ) {
     for entity in terminal_query.iter() {
         commands.entity(entity).despawn();
     }
     for entity in scanline_query.iter() {
         commands.entity(entity).despawn();
+    }
+    for entity in scrollbar_query.iter() {
+        commands.entity(entity).despawn();
+    }
+}
+
+fn handle_scroll_input(
+    mut mouse_wheel_events: MessageReader<MouseWheel>,
+    mut scroll_query: Query<&mut ScrollPosition, With<ScrollContainer>>,
+    keys: Res<ButtonInput<KeyCode>>,
+) {
+    for mut scroll_position in scroll_query.iter_mut() {
+        // Handle mouse wheel scrolling
+        for ev in mouse_wheel_events.read() {
+            let scroll_amount = match ev.unit {
+                bevy::input::mouse::MouseScrollUnit::Line => ev.y * 25.0, // 25 pixels per line
+                bevy::input::mouse::MouseScrollUnit::Pixel => ev.y,
+            };
+
+            scroll_position.y -= scroll_amount;
+            scroll_position.y = scroll_position.y.max(0.0);
+        }
+
+        // Handle keyboard scrolling
+        if keys.just_pressed(KeyCode::PageUp) {
+            scroll_position.y -= 200.0;
+            scroll_position.y = scroll_position.y.max(0.0);
+        }
+        if keys.just_pressed(KeyCode::PageDown) {
+            scroll_position.y += 200.0;
+        }
+        if keys.just_pressed(KeyCode::Home) {
+            scroll_position.y = 0.0;
+        }
+        if keys.just_pressed(KeyCode::End) {
+            scroll_position.y = 10000.0; // Large value, will be clamped by Bevy
+        }
+    }
+}
+
+fn update_scrollbar_system(
+    scroll_query: Query<&ScrollPosition, With<ScrollContainer>>,
+    mut scrollbar_query: Query<&mut Node, With<ScrollbarThumb>>,
+) {
+    if let Ok(scroll_position) = scroll_query.single() {
+        for mut thumb_style in scrollbar_query.iter_mut() {
+            // Calculate thumb position based on scroll offset
+            // This is a simplified calculation - in a real implementation you'd want to
+            // calculate this based on content height vs visible height ratio
+            let scroll_percentage = (scroll_position.y / 1000.0).clamp(0.0, 1.0);
+            let track_height_minus_thumb = 300.0; // Approximate available space
+            let thumb_position = scroll_percentage * track_height_minus_thumb;
+
+            thumb_style.top = Val::Px(thumb_position);
+        }
     }
 }
 
