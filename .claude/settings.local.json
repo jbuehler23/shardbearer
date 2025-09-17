@@ -2,7 +2,9 @@
   "permissions": {
     "allow": [
       "Bash(cargo check:*)",
-      "Bash(rustc:*)"
+      "Bash(rustc:*)",
+      "WebSearch",
+      "WebFetch(domain:bevy.org)"
     ],
     "deny": [],
     "ask": []

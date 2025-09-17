@@ -12,9 +12,6 @@ use bevy::text::LineHeight;
 pub struct GameTextDisplay;
 
 #[derive(Component)]
-pub struct InputPrompt;
-
-#[derive(Component)]
 pub struct ContentSection {
     pub section_type: ContentType,
 }
@@ -39,12 +36,6 @@ pub struct ScrollContainer;
 pub struct TerminalContainer;
 
 #[derive(Component)]
-pub struct CursorBlink {
-    timer: Timer,
-    visible: bool,
-}
-
-#[derive(Component)]
 pub struct TypewriterEffect {
     full_text: String,
     current_index: usize,
@@ -62,7 +53,6 @@ pub fn plugin(app: &mut App) {
         (
             ui_render_system,
             terminal_input_system,
-            cursor_blink_system,
             typewriter_effect_system,
             scanline_animation_system,
         )
@@ -128,42 +118,6 @@ fn setup_terminal(mut commands: Commands, asset_server: Res<AssetServer>) {
                         },
                     ));
                 });
-
-            // Input area at bottom
-            parent
-                .spawn((
-                    Node {
-                        width: Val::Percent(100.0),
-                        max_width: Val::Px(1200.0),
-                        height: Val::Px(50.0),
-                        flex_direction: FlexDirection::Row,
-                        align_items: AlignItems::Center,
-                        margin: UiRect::top(Val::Px(10.0)),
-                        padding: UiRect::axes(Val::Px(15.0), Val::Px(10.0)),
-                        ..default()
-                    },
-                    BackgroundColor(Color::srgba(0.0, 0.02, 0.05, 0.95)),
-                    BorderColor::all(Color::srgb(0.0, 1.0, 0.8)),
-                    BorderRadius::all(Val::Px(2.0)),
-                ))
-                .with_children(|input_area| {
-                    // Input prompt with blinking cursor
-                    input_area.spawn((
-                        Text("> _".to_string()),
-                        TextFont {
-                            font: asset_server.load("fonts/FiraCode-Regular.ttf"),
-                            font_size: 16.0,
-                            font_smoothing: default(),
-                            line_height: LineHeight::RelativeToFont(1.2),
-                        },
-                        TextColor(Color::srgb(0.0, 1.0, 0.8)),
-                        InputPrompt,
-                        CursorBlink {
-                            timer: Timer::from_seconds(0.5, TimerMode::Repeating),
-                            visible: true,
-                        },
-                    ));
-                });
         });
 
     // Add scanline effect overlay
@@ -185,10 +139,7 @@ fn ui_render_system(
     story: Res<Story>,
     mut game: ResMut<Game>,
     mut ui: ResMut<GameUI>,
-    mut text_query: Query<
-        (&mut Text, Option<&mut TypewriterEffect>),
-        (With<GameTextDisplay>, Without<InputPrompt>),
-    >,
+    mut text_query: Query<(&mut Text, Option<&mut TypewriterEffect>), With<GameTextDisplay>>,
 ) {
     if !game.should_redraw {
         return;
@@ -231,27 +182,43 @@ fn ui_render_system(
             display_text.push_str(&format!("{}\n\n", end.summary));
 
             // Build ending choices with selection highlighting
-            display_text.push_str("┌─────────────────────────────┐\n");
-            display_text.push_str("│  What now?                  │\n");
+            let ending_choices = vec!["Reboot from the alley", "Show unlocked endings", "Quit"];
 
-            let ending_choices = vec![
-                "Reboot from the alley",
-                "Show unlocked endings",
-                "Quit"
-            ];
+            // Calculate dynamic width for ending choices
+            let max_ending_text_width = ending_choices
+                .iter()
+                .map(|text| text.len())
+                .max()
+                .unwrap_or(0);
+
+            // Account for selection formatting: "► [1] text" vs "  1) text"
+            let ending_box_width = max_ending_text_width + 8; // "► [1] " = 6 chars + padding
+            let content_width = ending_box_width - 2; // Width inside the box borders
+
+            let top_border = format!("┌─{}─┐\n", "─".repeat(ending_box_width - 2));
+            let what_now_line =
+                format!("│{:^width$}│\n", "What now?", width = ending_box_width - 2);
+            let bottom_border = format!("└─{}─┘\n", "─".repeat(ending_box_width - 2));
+
+            display_text.push_str(&top_border);
+            display_text.push_str(&what_now_line);
 
             for (i, choice_text) in ending_choices.iter().enumerate() {
                 let is_selected = ui.selected_choice == Some(i);
                 let prefix = if is_selected { "► " } else { "  " };
-                let formatted = if is_selected {
-                    format!("│{}[{}] {:<23}│\n", prefix, i + 1, choice_text)
+                let choice_line = if is_selected {
+                    format!("{}[{}] {}", prefix, i + 1, choice_text)
                 } else {
-                    format!("│{}{}) {:<23}│\n", prefix, i + 1, choice_text)
+                    format!("{}{}) {}", prefix, i + 1, choice_text)
                 };
-                display_text.push_str(&formatted);
+                display_text.push_str(&format!(
+                    "│{:<width$}│\n",
+                    choice_line,
+                    width = content_width
+                ));
             }
 
-            display_text.push_str("└─────────────────────────────┘\n");
+            display_text.push_str(&bottom_border);
 
             // Add selection hint if a choice is selected
             if ui.selected_choice.is_some() {
@@ -259,7 +226,7 @@ fn ui_render_system(
             }
         } else {
             // Find the max width needed for choices
-            let max_width = node
+            let max_text_width = node
                 .choices
                 .iter()
                 .map(|c| c.text.len())
@@ -267,7 +234,12 @@ fn ui_render_system(
                 .unwrap_or(0)
                 .min(65); // Cap at 65 chars wide for better readability
 
-            let box_width = max_width + 6; // Add padding for number and spaces
+            // Calculate box width accounting for selection formatting
+            // Unselected: "  1) text" = 5 chars + text
+            // Selected: "► [1] text" = 6 chars + text (for single digit) or 7 chars (for double digit)
+            let max_choice_num_width = if node.choices.len() >= 10 { 2 } else { 1 };
+            let max_prefix_width = 2 + max_choice_num_width + 2; // "► [" + num + "] "
+            let box_width = max_text_width + max_prefix_width + 2; // +2 for left/right padding
             let top_border = format!("┌─ CHOICES {}┐\n", "─".repeat(box_width.saturating_sub(11)));
             let bottom_border = format!("└{}┘\n", "─".repeat(box_width));
 
@@ -277,8 +249,12 @@ fn ui_render_system(
             display_text.push_str(&top_border);
             for (i, choice) in node.choices.iter().enumerate() {
                 // Wrap long text properly
-                let text = if choice.text.len() > max_width {
-                    let mut wrapped = choice.text.chars().take(max_width - 3).collect::<String>();
+                let text = if choice.text.len() > max_text_width {
+                    let mut wrapped = choice
+                        .text
+                        .chars()
+                        .take(max_text_width - 3)
+                        .collect::<String>();
                     wrapped.push_str("...");
                     wrapped
                 } else {
@@ -297,7 +273,7 @@ fn ui_render_system(
                 display_text.push_str(&format!(
                     "│{:<width$}│\n",
                     choice_text,
-                    width = max_width + 4
+                    width = box_width - 2
                 ));
             }
             display_text.push_str(&bottom_border);
@@ -306,7 +282,7 @@ fn ui_render_system(
             if ui.selected_choice.is_some() {
                 display_text.push_str("\n▶ Press ENTER to confirm selection, ESC to cancel\n");
             } else {
-                display_text.push_str("\n💡 Hold SPACE to skip text animation\n");
+                display_text.push_str("\n▶ Hold SPACE to skip text animation\n");
             }
         }
 
@@ -346,8 +322,6 @@ fn ui_render_system(
             text.0 = display_text;
         }
     }
-
-    // Input prompt is now handled by cursor_blink_system
 
     game.message = None;
     game.should_redraw = false;
@@ -561,26 +535,10 @@ fn cleanup_terminal(
     }
 }
 
-fn cursor_blink_system(
-    time: Res<Time>,
-    mut query: Query<(&mut Text, &mut CursorBlink), With<InputPrompt>>,
-    ui: Res<GameUI>,
-) {
-    for (mut text, mut cursor) in query.iter_mut() {
-        cursor.timer.tick(time.delta());
-        if cursor.timer.just_finished() {
-            cursor.visible = !cursor.visible;
-        }
-        // Always update the input display immediately (not tied to cursor blink)
-        let cursor_char = if cursor.visible { "█" } else { " " };
-        text.0 = format!("> {}{}", ui.input_buffer, cursor_char);
-    }
-}
-
 fn typewriter_effect_system(
     time: Res<Time>,
     keys: Res<ButtonInput<KeyCode>>,
-    mut query: Query<(&mut Text, &mut TypewriterEffect)>
+    mut query: Query<(&mut Text, &mut TypewriterEffect)>,
 ) {
     for (mut text, mut effect) in query.iter_mut() {
         if !effect.complete {
