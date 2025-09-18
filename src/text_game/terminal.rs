@@ -1,7 +1,7 @@
 use crate::screens::Screen;
 use crate::text_game::{
     game::{Game, GameUI, InputEvent},
-    story::{BANNER, Story},
+    story::Story,
 };
 use bevy::input::ButtonState;
 use bevy::input::keyboard::KeyboardInput;
@@ -211,12 +211,6 @@ fn ui_render_system(
 
     // Clear selection state when starting a new render
     let mut display_text = String::new();
-
-    // Only show banner on the start screen
-    if game.current == "start" {
-        display_text.push_str(&BANNER);
-        display_text.push_str("\n\n");
-    }
 
     if let Some(node) = story.nodes.get(game.current) {
         if let Some(ascii) = node.ascii {
