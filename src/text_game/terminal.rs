@@ -56,6 +56,13 @@ pub struct ScrollbarThumb;
 #[derive(Component)]
 pub struct ScrollIndicator;
 
+#[derive(Component, Default)]
+pub struct ContentMetrics {
+    pub content_height: f32,
+    pub viewport_height: f32,
+    pub is_scrollable: bool,
+}
+
 pub fn plugin(app: &mut App) {
     app.add_systems(OnEnter(Screen::Gameplay), setup_terminal);
     app.add_systems(
@@ -64,6 +71,8 @@ pub fn plugin(app: &mut App) {
             ui_render_system,
             terminal_input_system,
             handle_scroll_input,
+            update_content_metrics,
+            update_scrollbar_visibility,
             update_scrollbar_system,
             typewriter_effect_system,
             scanline_animation_system,
@@ -116,6 +125,7 @@ fn setup_terminal(mut commands: Commands, asset_server: Res<AssetServer>) {
                             BackgroundColor(Color::srgba(0.0, 0.02, 0.05, 0.9)),
                             ScrollContainer,
                             ScrollPosition::default(),
+                            ContentMetrics::default(),
                         ))
                 .with_children(|scroll| {
                     // Content will be dynamically added here
@@ -144,7 +154,7 @@ fn setup_terminal(mut commands: Commands, asset_server: Res<AssetServer>) {
                     ));
                 });
 
-                    // Custom scrollbar
+                    // Custom scrollbar (initially hidden)
                     content_parent
                         .spawn((
                             Node {
@@ -157,6 +167,7 @@ fn setup_terminal(mut commands: Commands, asset_server: Res<AssetServer>) {
                             },
                             BackgroundColor(Color::srgba(0.0, 0.3, 0.5, 0.3)),
                             ScrollbarTrack,
+                            Visibility::Hidden,
                         ))
                         .with_children(|track| {
                             // Scrollbar thumb
@@ -348,11 +359,7 @@ fn ui_render_system(
             display_text.push_str(&format!("\n▶ SYSTEM: {}\n", msg.to_uppercase()));
         }
 
-        // Add scroll hints for navigation
-        display_text.push_str("\n");
-        display_text.push_str("═══════════════════════════════════════\n");
-        display_text.push_str("▲ Mouse wheel, Page Up/Down to scroll\n");
-        display_text.push_str("▼ Home/End for top/bottom navigation\n");
+        // Scroll hints will be added dynamically by update_content_metrics
     } else {
         display_text.push_str(&format!("[ERROR: MISSING NODE '{}']\n", game.current));
     }
@@ -633,17 +640,40 @@ fn handle_scroll_input(
 }
 
 fn update_scrollbar_system(
-    scroll_query: Query<&ScrollPosition, With<ScrollContainer>>,
+    scroll_query: Query<(&ScrollPosition, &ContentMetrics), With<ScrollContainer>>,
     mut scrollbar_query: Query<&mut Node, With<ScrollbarThumb>>,
+    scrollbar_track_query: Query<&Node, (With<ScrollbarTrack>, Without<ScrollbarThumb>)>,
 ) {
-    if let Ok(scroll_position) = scroll_query.single() {
+    if let Ok((scroll_position, metrics)) = scroll_query.single() {
+        if !metrics.is_scrollable {
+            return;
+        }
+
+        let Ok(track_node) = scrollbar_track_query.single() else { return; };
+
         for mut thumb_style in scrollbar_query.iter_mut() {
-            // Calculate thumb position based on scroll offset
-            // This is a simplified calculation - in a real implementation you'd want to
-            // calculate this based on content height vs visible height ratio
-            let scroll_percentage = (scroll_position.y / 1000.0).clamp(0.0, 1.0);
-            let track_height_minus_thumb = 300.0; // Approximate available space
-            let thumb_position = scroll_percentage * track_height_minus_thumb;
+            // Calculate thumb size based on viewport/content ratio
+            let viewport_ratio = metrics.viewport_height / metrics.content_height;
+            let track_height = match track_node.height {
+                Val::Percent(p) => metrics.viewport_height * p / 100.0,
+                Val::Px(h) => h,
+                _ => metrics.viewport_height,
+            };
+
+            let thumb_height = (track_height * viewport_ratio).max(30.0); // Min 30px
+            thumb_style.height = Val::Px(thumb_height);
+
+            // Calculate scrollable range
+            let scrollable_content = metrics.content_height - metrics.viewport_height;
+            let scroll_percentage = if scrollable_content > 0.0 {
+                (scroll_position.y / scrollable_content).clamp(0.0, 1.0)
+            } else {
+                0.0
+            };
+
+            // Calculate thumb position
+            let track_space = track_height - thumb_height;
+            let thumb_position = scroll_percentage * track_space;
 
             thumb_style.top = Val::Px(thumb_position);
         }
@@ -699,3 +729,102 @@ fn scanline_animation_system(time: Res<Time>, mut query: Query<&mut Node, With<S
         style.top = Val::Px(position);
     }
 }
+
+fn update_content_metrics(
+    mut metrics_query: Query<(&mut ContentMetrics, &Node, &Children), With<ScrollContainer>>,
+    text_query: Query<&Node, With<GameTextDisplay>>,
+    window: Query<&Window>,
+) {
+    let Ok(window) = window.single() else { return; };
+
+    for (mut metrics, container_node, children) in metrics_query.iter_mut() {
+        // Get viewport height from container node
+        metrics.viewport_height = match container_node.height {
+            Val::Px(h) => h,
+            Val::Percent(p) => window.height() * p / 100.0 * 0.85, // Account for 85% height
+            _ => 600.0, // fallback
+        };
+
+        // Get content height from text node
+        for child in children.iter() {
+            if let Ok(text_node) = text_query.get(child) {
+                metrics.content_height = match text_node.min_height {
+                    Val::Px(h) => h,
+                    _ => 0.0,
+                };
+
+                // Add padding to content height
+                if let Val::Px(padding) = text_node.padding.top {
+                    metrics.content_height += padding * 2.0; // top + bottom
+                }
+            }
+        }
+
+        // Determine if scrollable
+        metrics.is_scrollable = metrics.content_height > metrics.viewport_height;
+    }
+}
+
+fn update_scrollbar_visibility(
+    metrics_query: Query<&ContentMetrics, (With<ScrollContainer>, Changed<ContentMetrics>)>,
+    mut scrollbar_query: Query<&mut Visibility, With<ScrollbarTrack>>,
+    mut text_query: Query<(&mut Text, Option<&mut TypewriterEffect>), With<GameTextDisplay>>,
+) {
+    for metrics in metrics_query.iter() {
+        // Update scrollbar visibility
+        for mut visibility in scrollbar_query.iter_mut() {
+            *visibility = if metrics.is_scrollable {
+                Visibility::Visible
+            } else {
+                Visibility::Hidden
+            };
+        }
+
+        // Add/remove scroll hints from text
+        if let Ok((mut text, typewriter)) = text_query.single_mut() {
+            let current_text = if let Some(ref effect) = typewriter {
+                effect.full_text.clone()
+            } else {
+                text.0.clone()
+            };
+
+            // Check if we need to add scroll hints
+            if metrics.is_scrollable && !current_text.contains("▲ Mouse wheel") {
+                let mut updated_text = current_text.clone();
+                updated_text.push_str("\n\n");
+                updated_text.push_str("═══════════════════════════════════════\n");
+                updated_text.push_str("▲ Mouse wheel, Page Up/Down to scroll\n");
+                updated_text.push_str("▼ Home/End for top/bottom navigation\n");
+
+                text.0 = updated_text.clone();
+                if let Some(mut effect) = typewriter {
+                    effect.full_text = updated_text.clone();
+                }
+            } else if !metrics.is_scrollable && current_text.contains("▲ Mouse wheel") {
+                // Remove scroll hints if not scrollable
+                let lines: Vec<&str> = current_text.lines().collect();
+                let filtered: Vec<&str> = lines.into_iter()
+                    .filter(|line| !line.contains("═══════") &&
+                            !line.contains("▲ Mouse wheel") &&
+                            !line.contains("▼ Home/End"))
+                    .collect();
+                let updated_text = filtered.join("\n");
+
+                text.0 = updated_text.clone();
+                if let Some(mut effect) = typewriter {
+                    effect.full_text = updated_text.clone();
+                }
+            }
+        }
+    }
+}
+
+// CRT time update function removed - keeping for future reference
+// fn update_crt_time(
+//     time: Res<Time>,
+//     mut crt_query: Query<&mut crate::text_game::crt_effect::CrtSettings>,
+// ) {
+//     for mut settings in crt_query.iter_mut() {
+//         settings.time = time.elapsed_secs();
+//     }
+// }

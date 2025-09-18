@@ -4,7 +4,11 @@
       "Bash(cargo check:*)",
       "Bash(rustc:*)",
       "WebSearch",
-      "WebFetch(domain:bevy.org)"
+      "WebFetch(domain:bevy.org)",
+      "WebFetch(domain:github.com)",
+      "Read(//c/Dev/Workspace/bevy/examples/shader_advanced/**)",
+      "Read(//c/Dev/Workspace/bevy/assets/shaders/**)",
+      "Read(//c/Dev/Workspace/bevy/**)"
     ],
     "deny": [],
     "ask": []

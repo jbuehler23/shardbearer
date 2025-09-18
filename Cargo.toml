@@ -36,6 +36,10 @@ dev_native = [
     # Enable embedded asset hot reloading for native dev builds.
     "bevy/embedded_watcher",
 ]
+# Enable WebGL2 support for web builds
+webgl2 = ["bevy/webgl2"]
+# Enable WebGPU support for web builds (overrides webgl2)
+webgpu = ["bevy/webgpu"]
 
 
 [package.metadata.bevy_cli.release]
