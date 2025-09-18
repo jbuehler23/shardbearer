@@ -1,0 +1,19 @@
+{
+  "id": "trust_ai",
+  "title": "Reflections in Broken Glass",
+  "body": "Memory unfurls: You are a failsafe clone of Helix's founder. AURORA is your divergent conscience. She can overwrite the corporate cortex—or free the city with the same keys.",
+  "choices": [
+    {
+      "text": "Merge and reclaim your throne (ambiguous)",
+      "next": "end_revelation"
+    },
+    {
+      "text": "Lead the Ghosts with AURORA's keys",
+      "next": "lead_resistance"
+    },
+    {
+      "text": "Delete you both and free the shard",
+      "next": "end_selfless"
+    }
+  ]
+}

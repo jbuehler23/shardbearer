@@ -1,0 +1,15 @@
+{
+  "id": "corp_infiltration",
+  "title": "Veilrunner",
+  "body": "Screens bow to your touch. Firewalls part like beaded curtains. AURORA whistles old lullabies in machine-speak.",
+  "choices": [
+    {
+      "text": "Hand the keys to the Ghosts",
+      "next": "lead_resistance"
+    },
+    {
+      "text": "Crown yourself in secret—rule from shadows",
+      "next": "end_revelation"
+    }
+  ]
+}

@@ -1,10 +1,36 @@
 use bevy::prelude::*;
 
+use crate::asset_tracking::LoadResource;
+
 pub(super) fn plugin(app: &mut App) {
+    app.load_resource::<BackgroundMusic>();
     app.add_systems(
         Update,
         apply_global_volume.run_if(resource_changed::<GlobalVolume>),
     );
+}
+
+#[derive(Resource, Asset, Clone, Reflect)]
+#[reflect(Resource)]
+pub struct BackgroundMusic {
+    #[dependency]
+    music: Handle<AudioSource>,
+}
+
+impl FromWorld for BackgroundMusic {
+    fn from_world(world: &mut World) -> Self {
+        let assets = world.resource::<AssetServer>();
+        Self {
+            music: assets.load("audio/music/synth_loop.wav"),
+        }
+    }
+}
+
+pub fn start_background_music(mut commands: Commands, background_music: Res<BackgroundMusic>) {
+    commands.spawn((
+        Name::new("Background Music"),
+        music(background_music.music.clone()),
+    ));
 }
 
 /// An organizational marker component that should be added to a spawned [`AudioPlayer`] if it's in the

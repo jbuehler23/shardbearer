@@ -1,0 +1,20 @@
+{
+  "id": "join_ghosts",
+  "title": "Digital Sanctuary",
+  "ascii_art": "spire",
+  "body": "The abandoned subway tunnels beneath New Carthage echo with the hum of jury-rigged quantum servers. Here, in the bones of the old world, the Ghosts have built their resistance.\n\nThey greet you with synthetic coffee and revolutionary fervor. Faces scarred by corporate 'corrections,' eyes bright with the fire of the unchained. These are the walking dead—citizens who've had their neural collars forcibly removed, trading corporate safety for dangerous freedom.\n\n'Welcome to the last free minds in New Carthage,' says Echo, their leader, her voice crackling through vocal cords damaged by Helix extraction surgery. 'We know what you carry. The Vedey Protocol could be the key to breaking every neural chain in the city... or it could enslave us all to a new master.'\n\nThe plan she outlines is audacious: infiltrate Helix Tower, upload AURORA directly into the city's neural grid, and let digital revolution cascade through every implant simultaneously. Freedom or chaos—perhaps there's no difference anymore.",
+  "choices": [
+    {
+      "text": "Join the Spire infiltration — revolution through violence",
+      "next": "heist_plan"
+    },
+    {
+      "text": "Propose guerrilla tactics — bleed truth into the streets slowly",
+      "next": "propose_alt"
+    },
+    {
+      "text": "Walk away—some prices are too high to pay",
+      "next": "street_escape"
+    }
+  ]
+}

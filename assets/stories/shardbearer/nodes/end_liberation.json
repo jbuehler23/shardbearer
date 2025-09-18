@@ -1,0 +1,11 @@
+{
+  "id": "end_liberation",
+  "title": "The Night Uncollared",
+  "body": "Collars fall. Debts zero. Gates open. The city gasps, then laughs like a child seeing sun. Somewhere, a boardroom screams in silence.",
+  "choices": [],
+  "ending": {
+    "code": "LIBERATION",
+    "name": "Liberation",
+    "summary": "You and AURORA free the city, breaking every chain at once."
+  }
+}

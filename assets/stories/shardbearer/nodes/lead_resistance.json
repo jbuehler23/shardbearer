@@ -1,0 +1,15 @@
+{
+  "id": "lead_resistance",
+  "title": "Choir of Modems",
+  "body": "The Ghosts become an orchestra and the city hums a different key. AURORA asks, 'Do we free them all, regardless of cost?'",
+  "choices": [
+    {
+      "text": "Yes. Break the yoke — no half measures",
+      "next": "end_liberation"
+    },
+    {
+      "text": "No. Guide softly — let them choose",
+      "next": "end_quiet"
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "id": "end_assimilation",
+  "title": "Golden Cage",
+  "body": "Penthouse sunsets. Passwords that open people. Your smile in the mirror is a logo.",
+  "choices": [],
+  "ending": {
+    "code": "ASSIMILATION",
+    "name": "Assimilation",
+    "summary": "You trade the shard for power and become what you fought."
+  }
+}

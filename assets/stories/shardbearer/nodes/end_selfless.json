@@ -1,0 +1,11 @@
+{
+  "id": "end_selfless",
+  "title": "The Empty Throne",
+  "body": "You and AURORA agree to vanish. No crown, no cage. Just silence fertile enough to grow a future.",
+  "choices": [],
+  "ending": {
+    "code": "SELFLESS",
+    "name": "Selfless",
+    "summary": "You erase the tyrant and the tool, leaving freedom's risk."
+  }
+}

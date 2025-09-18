@@ -1,0 +1,24 @@
+{
+  "id": "start",
+  "title": "The Shard Bearer",
+  "ascii_art": "alley",
+  "body": "New Carthage never sleeps. The rain tastes of copper and ozone—industrial runoff from the memory farms. You press deeper into the alley, your neural jack tingling with the proximity of stolen data.\n\nThe shard pulses against your wrist, a biometric lock keyed to your DNA. Inside: fragments of the Vedey Protocol—Helix Corporation's most classified neural mapping project. Every step echoes off chrome-slick walls while surveillance drones hum their digital lullabies above.\n\nYour breath clouds in the neon-painted air. The weight of what you carry could topple governments... or make you disappear like morning mist. Time to decide your next move before the hunters close in.",
+  "choices": [
+    {
+      "text": "Jack into the back-alley terminal—risk exposure for information",
+      "next": "jack_in"
+    },
+    {
+      "text": "Meet Moth in her den—trust your fixer with the goods",
+      "next": "sell_moth"
+    },
+    {
+      "text": "Seek out the Ghosts—join the neural liberation movement",
+      "next": "join_ghosts"
+    },
+    {
+      "text": "Walk into Helix Tower—bargain with the devil you know",
+      "next": "bargain"
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "id": "bargain",
+  "title": "Feral Hospitality",
+  "ascii_art": "spire",
+  "body": "Helix greets you with scented air and armed smiles. Director Ilex taps a tablet. 'The shard is ours. Your future can be, too.'",
+  "choices": [
+    {
+      "text": "Take off-world identity and run",
+      "next": "end_exile"
+    },
+    {
+      "text": "Stall while you plant a virus",
+      "next": "corp_virus"
+    },
+    {
+      "text": "Lock the building down with AURORA",
+      "next": "lockdown_mayhem"
+    }
+  ]
+}

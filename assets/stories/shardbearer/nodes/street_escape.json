@@ -1,0 +1,11 @@
+{
+  "id": "street_escape",
+  "title": "Edge of the Map",
+  "body": "You trade the shard for papers, the city for a ship's berth. The rain never quite washes off.",
+  "choices": [
+    {
+      "text": "Sail into the smogline",
+      "next": "end_exile"
+    }
+  ]
+}

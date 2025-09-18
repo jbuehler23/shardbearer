@@ -4,10 +4,14 @@ use bevy::input::ButtonState;
 use bevy::input::keyboard::KeyboardInput;
 use bevy::prelude::*;
 
+use crate::audio::start_background_music;
 use crate::{asset_tracking::ResourceHandles, menus::Menu, screens::Screen};
 
 pub(super) fn plugin(app: &mut App) {
-    app.add_systems(OnEnter(Menu::Main), spawn_main_menu);
+    app.add_systems(
+        OnEnter(Menu::Main),
+        (spawn_main_menu, start_background_music),
+    );
     app.add_systems(
         Update,
         (handle_menu_input, update_menu_selection).run_if(in_state(Menu::Main)),

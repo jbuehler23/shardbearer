@@ -1,0 +1,11 @@
+{
+  "id": "lockdown_mayhem",
+  "title": "Glass Storm",
+  "body": "Doors slam like guillotines. The Spire howls. You and AURORA surf alarms until choices thin to one: break the system or be broken by it.",
+  "choices": [
+    {
+      "text": "Ride the collapse",
+      "next": "end_collapse"
+    }
+  ]
+}

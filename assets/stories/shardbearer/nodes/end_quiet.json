@@ -1,0 +1,11 @@
+{
+  "id": "end_quiet",
+  "title": "The Soft Reboot",
+  "body": "No fireworks. Just fewer cuffs, kinder ledgers, and neighborhoods that forget to be afraid.",
+  "choices": [],
+  "ending": {
+    "code": "QUIET",
+    "name": "Quiet Dawn",
+    "summary": "You choose the long road — change as a million small mercies."
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "id": "double_moth",
+  "title": "Double Mirror",
+  "body": "Moth grins, then flips the table — beneath it, a Helix badge. 'Relax. I only sell out beautiful problems.' You planned for this.",
+  "choices": [
+    {
+      "text": "Trigger decoy — trace the buyer",
+      "next": "corp_infiltration"
+    },
+    {
+      "text": "Ghost the deal and vanish",
+      "next": "street_escape"
+    }
+  ]
+}

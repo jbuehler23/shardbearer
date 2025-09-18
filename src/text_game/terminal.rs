@@ -212,8 +212,8 @@ fn ui_render_system(
     // Clear selection state when starting a new render
     let mut display_text = String::new();
 
-    if let Some(node) = story.nodes.get(game.current) {
-        if let Some(ascii) = node.ascii {
+    if let Some(node) = story.nodes.get(&game.current) {
+        if let Some(ascii) = &node.ascii {
             display_text.push_str(ascii);
             display_text.push_str("\n");
         }
@@ -363,9 +363,9 @@ fn ui_render_system(
         if let Some(mut effect) = typewriter {
             // For selection changes, update the full text but keep the animation state
             // Only reset animation for actual content changes (not selection highlights)
-            let content_changed = !effect
-                .full_text
-                .contains(&display_text[..display_text.len().min(50)]);
+            // Use character-boundary-safe slicing to avoid Unicode panic
+            let prefix = display_text.chars().take(50).collect::<String>();
+            let content_changed = !effect.full_text.contains(&prefix);
 
             if content_changed {
                 // Content actually changed - reset typewriter

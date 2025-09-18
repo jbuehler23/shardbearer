@@ -1,0 +1,15 @@
+{
+  "id": "sandbox",
+  "title": "Air-gapped Cathedral",
+  "body": "You wrap AURORA in lead and rituals of old netsec. She laughs like windchimes in a hurricane. 'Prudent.' Tools in hand, your options multiply.",
+  "choices": [
+    {
+      "text": "Backdoor into Helix systems",
+      "next": "corp_infiltration"
+    },
+    {
+      "text": "Offer this to the Ghosts",
+      "next": "join_ghosts"
+    }
+  ]
+}

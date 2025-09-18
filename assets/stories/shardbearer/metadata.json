@@ -1,0 +1,9 @@
+{
+  "id": "shardbearer",
+  "title": "Shardbearer: A New Carthage Story",
+  "author": "Original Story",
+  "version": "1.0.0",
+  "description": "In the rain-slicked streets of New Carthage, you carry a shard that could topple governments or make you disappear. Navigate corporate espionage, neural liberation movements, and digital consciousness in this cyberpunk adventure.",
+  "start_node": "start",
+  "tags": ["cyberpunk", "choices-matter", "multiple-endings"]
+}

@@ -1,0 +1,15 @@
+{
+  "id": "tail_moth",
+  "title": "Shadowing the Spark",
+  "body": "You tail the shard through skeins of traffic into Helix territory. The Spire rises like a needle through a storm.",
+  "choices": [
+    {
+      "text": "Ride the delivery into the Spire",
+      "next": "corp_infiltration"
+    },
+    {
+      "text": "Ping the Ghosts to converge",
+      "next": "join_ghosts"
+    }
+  ]
+}

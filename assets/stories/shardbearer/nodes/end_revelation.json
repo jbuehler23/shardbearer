@@ -1,0 +1,11 @@
+{
+  "id": "end_revelation",
+  "title": "The Mirror Crown",
+  "body": "In the quiet core you merge with AURORA. You remember writing the city's cage—and the key. The next sunrise is yours to name.",
+  "choices": [],
+  "ending": {
+    "code": "REVELATION",
+    "name": "Revelation",
+    "summary": "You reclaim the founder's mantle—savior, tyrant, or something new."
+  }
+}

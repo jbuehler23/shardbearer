@@ -1,0 +1,11 @@
+{
+  "id": "end_exile",
+  "title": "Off-World Horizon",
+  "body": "Your name dissolves into the manifest. Stars look like exit wounds. Somewhere behind you, New Carthage keeps raining.",
+  "choices": [],
+  "ending": {
+    "code": "EXILE",
+    "name": "Exile",
+    "summary": "You choose the far horizon over a fight you didn't start."
+  }
+}

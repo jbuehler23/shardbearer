@@ -5,11 +5,11 @@
 
 mod asset_tracking;
 mod audio;
-mod text_game;
 #[cfg(feature = "dev")]
 mod dev_tools;
 mod menus;
 mod screens;
+mod text_game;
 mod theme;
 
 use bevy::{asset::AssetMetaCheck, prelude::*};
@@ -97,8 +97,5 @@ struct Pause(pub bool);
 struct PausableSystems;
 
 fn spawn_camera(mut commands: Commands) {
-    commands.spawn((
-        Name::new("Camera"),
-        Camera2d,
-    ));
+    commands.spawn((Name::new("Camera"), Camera2d));
 }

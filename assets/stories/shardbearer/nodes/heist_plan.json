@@ -1,0 +1,20 @@
+{
+  "id": "heist_plan",
+  "title": "Ascension",
+  "ascii_art": "spire",
+  "body": "Elevators that hum like beehives. Guards that smile like statues. At the core: the city-grid, a heart of glass.",
+  "choices": [
+    {
+      "text": "Upload AURORA and free the grid",
+      "next": "end_liberation"
+    },
+    {
+      "text": "Swap in a decoy — quiet resistance",
+      "next": "end_quiet"
+    },
+    {
+      "text": "Sell out the Ghosts for a rich life",
+      "next": "end_assimilation"
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "id": "end_collapse",
+  "title": "System Crash",
+  "body": "The grid spasms. Sirens tangle. You walk out through falling code, leaving footprints in reboot dust.",
+  "choices": [],
+  "ending": {
+    "code": "COLLAPSE",
+    "name": "Collapse",
+    "summary": "Your play burns the Spire into a memory and a myth."
+  }
+}

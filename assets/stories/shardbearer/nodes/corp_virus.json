@@ -1,0 +1,15 @@
+{
+  "id": "corp_virus",
+  "title": "Thorn in the Vein",
+  "body": "You lace their network with chrysalis code. It hatches across payrolls and patrols, shedding compliance like dead skin.",
+  "choices": [
+    {
+      "text": "Ride the breach to the core",
+      "next": "corp_infiltration"
+    },
+    {
+      "text": "Slip out and tip the Ghosts",
+      "next": "join_ghosts"
+    }
+  ]
+}

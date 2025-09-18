@@ -1,0 +1,11 @@
+{
+  "id": "purge",
+  "title": "Static Cascade",
+  "body": "You light the purge. The shard screams without sound. The alley folds sideways. You wake to sirens—your mind missing pieces AURORA borrowed to survive.",
+  "choices": [
+    {
+      "text": "Stagger into the night",
+      "next": "end_collapse"
+    }
+  ]
+}

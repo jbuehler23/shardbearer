@@ -1,0 +1,15 @@
+{
+  "id": "propose_alt",
+  "title": "The Long Leak",
+  "body": "You seed AURORA's proof across backchannels and pirate billboards. Truth becomes graffiti. Helix bleeds trust by a thousand cuts.",
+  "choices": [
+    {
+      "text": "Use the chaos to strike the Spire",
+      "next": "heist_plan"
+    },
+    {
+      "text": "Slip away into the cracks",
+      "next": "street_escape"
+    }
+  ]
+}

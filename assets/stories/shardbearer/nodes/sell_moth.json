@@ -1,0 +1,19 @@
+{
+  "id": "sell_moth",
+  "title": "The Fixer's Web",
+  "body": "Moth's den exists between floors—a forgotten maintenance space retrofitted with stolen tech and expensive paranoia. Thermal silk drapes catch the glow from black-market holographic displays showing commodity prices for human memories.\n\nShe doesn't look up from her work when you enter, carbon-fiber fingers dancing across quantum keyboards with surgical precision. The left side of her face bears the telltale scarring of corporate 'voluntary' neural enhancement—a reminder of her days in Helix's R&D division before her conscience got her blacklisted.\n\n'Runner,' she purrs, finally meeting your gaze with eyes that sparkle like broken glass. 'That pulse in your pocket feels expensive. Question is—how priceless is your conscience?' Her smile could cut throats.\n\nMoth trades in information, souls, and second chances. But in New Carthage, everyone has a price... and a buyer.",
+  "choices": [
+    {
+      "text": "Demand credits up front — trust is a luxury you can't afford",
+      "next": "double_moth"
+    },
+    {
+      "text": "Hand over the shard — she's never betrayed you before",
+      "next": "end_assimilation"
+    },
+    {
+      "text": "Plant a tracker on the shard — paranoia keeps you breathing",
+      "next": "tail_moth"
+    }
+  ]
+}
