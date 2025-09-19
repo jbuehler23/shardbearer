@@ -26,11 +26,18 @@ impl FromWorld for BackgroundMusic {
     }
 }
 
-pub fn start_background_music(mut commands: Commands, background_music: Res<BackgroundMusic>) {
-    commands.spawn((
-        Name::new("Background Music"),
-        music(background_music.music.clone()),
-    ));
+pub fn start_background_music(
+    mut commands: Commands,
+    background_music: Res<BackgroundMusic>,
+    music_query: Query<&Music>,
+) {
+    // Only start music if none is already playing
+    if music_query.is_empty() {
+        commands.spawn((
+            Name::new("Background Music"),
+            music(background_music.music.clone()),
+        ));
+    }
 }
 
 /// An organizational marker component that should be added to a spawned [`AudioPlayer`] if it's in the

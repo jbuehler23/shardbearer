@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shardbearer: A New Carthage Story - itch.io Page</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;700&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Fira Code', monospace;
+            background: linear-gradient(135deg, #010109 0%, #020215 50%, #010109 100%);
+            color: #00ffcc;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        .terminal-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: rgba(1, 1, 9, 0.8);
+            border: 2px solid #00ffcc;
+            border-radius: 10px;
+            box-shadow:
+                0 0 20px rgba(0, 255, 204, 0.3),
+                inset 0 0 20px rgba(0, 255, 204, 0.1);
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+
+        .ascii-banner {
+            font-size: 10px;
+            line-height: 1.2;
+            color: #00ffcc;
+            text-align: center;
+            margin: 20px 0;
+            white-space: pre;
+            overflow-x: auto;
+        }
+
+        .tagline {
+            text-align: center;
+            font-size: 18px;
+            color: #cccccc;
+            margin: 30px 0;
+            background: rgba(0, 255, 204, 0.1);
+            padding: 10px;
+            border: 1px solid #00ffcc;
+            border-radius: 5px;
+        }
+
+        .section {
+            margin: 30px 0;
+            padding: 20px;
+            border-left: 3px solid #00ffcc;
+            background: rgba(0, 255, 204, 0.05);
+        }
+
+        .section h2 {
+            color: #00ffcc;
+            font-size: 24px;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .section h3 {
+            color: #ffffff;
+            font-size: 18px;
+            margin: 15px 0 10px 0;
+        }
+
+        .section p {
+            color: #cccccc;
+            margin-bottom: 15px;
+            text-align: justify;
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .feature {
+            background: rgba(0, 255, 204, 0.1);
+            border: 1px solid #00ffcc;
+            border-radius: 5px;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .feature:hover {
+            background: rgba(0, 255, 204, 0.2);
+            box-shadow: 0 0 15px rgba(0, 255, 204, 0.3);
+        }
+
+        .feature h4 {
+            color: #00ffcc;
+            font-size: 16px;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+
+        .feature p {
+            color: #aaaaaa;
+            font-size: 14px;
+        }
+
+        .command-line {
+            background: #000000;
+            border: 1px solid #00ffcc;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 20px 0;
+            font-family: 'Fira Code', monospace;
+            color: #00ffcc;
+        }
+
+        .command-line::before {
+            content: '> ';
+            color: #ffffff;
+        }
+
+        .glow {
+            text-shadow: 0 0 10px #00ffcc;
+        }
+
+        .specs {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .spec-item {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid #555555;
+            border-radius: 3px;
+            padding: 10px;
+            color: #cccccc;
+        }
+
+        .spec-label {
+            color: #00ffcc;
+            font-weight: bold;
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        .tag {
+            background: rgba(0, 255, 204, 0.2);
+            border: 1px solid #00ffcc;
+            border-radius: 15px;
+            padding: 5px 15px;
+            font-size: 12px;
+            color: #00ffcc;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .crt-effect {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .crt-effect::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(
+                transparent 0%,
+                rgba(0, 255, 204, 0.03) 50%,
+                transparent 100%
+            );
+            background-size: 100% 4px;
+            animation: scanlines 0.1s linear infinite;
+            pointer-events: none;
+        }
+
+        @keyframes scanlines {
+            0% { background-position: 0 0; }
+            100% { background-position: 0 4px; }
+        }
+
+        .download-section {
+            text-align: center;
+            margin: 40px 0;
+            padding: 30px;
+            background: rgba(0, 255, 204, 0.1);
+            border: 2px solid #00ffcc;
+            border-radius: 10px;
+        }
+
+        .download-button {
+            display: inline-block;
+            background: linear-gradient(45deg, #00ffcc, #00cc99);
+            color: #000000;
+            text-decoration: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 20px rgba(0, 255, 204, 0.5);
+        }
+
+        .download-button:hover {
+            background: linear-gradient(45deg, #00cc99, #00ffcc);
+            box-shadow: 0 0 30px rgba(0, 255, 204, 0.8);
+            transform: translateY(-2px);
+        }
+
+        @media (max-width: 768px) {
+            .ascii-banner {
+                font-size: 6px;
+            }
+
+            .features {
+                grid-template-columns: 1fr;
+            }
+
+            .terminal-container {
+                margin: 10px;
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body class="crt-effect">
+    <div class="terminal-container">
+        <!-- ASCII Banner -->
+        <div class="ascii-banner glow">
+    ███████╗██╗  ██╗ █████╗ ██████╗ ██████╗ ██████╗ ███████╗ █████╗ ██████╗ ███████╗██████╗
+    ██╔════╝██║  ██║██╔══██╗██╔══██╗██╔══██╗██╔══██╗██╔════╝██╔══██╗██╔══██╗██╔════╝██╔══██╗
+    ███████╗███████║███████║██████╔╝██║  ██║██████╔╝█████╗  ███████║██████╔╝█████╗  ██████╔╝
+    ╚════██║██╔══██║██╔══██║██╔══██╗██║  ██║██╔══██╗██╔══╝  ██╔══██║██╔══██╗██╔══╝  ██╔══██╗
+    ███████║██║  ██║██║  ██║██║  ██║██████╔╝██████╔╝███████╗██║  ██║██║  ██║███████╗██║  ██║
+    ╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═════╝ ╚═════╝ ╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝
+
+             ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
+             ▓                  A   N E W   C A R T H A G E   S T O R Y              ▓
+             ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
+        </div>
+
+        <div class="tagline">
+            In the rain-slicked streets of New Carthage, you carry a shard that could topple governments or make you disappear.
+        </div>
+
+        <!-- Download Section -->
+        <div class="download-section">
+            <h2 class="glow">Initialize Download Protocol</h2>
+            <div class="command-line">cargo run --release</div>
+            <a href="#" class="download-button">Download Now</a>
+            <p style="margin-top: 15px; color: #888;">Available for Windows, macOS, and Linux</p>
+        </div>
+
+        <!-- Description -->
+        <div class="section">
+            <h2>System Overview</h2>
+            <p>
+                <strong>Shardbearer</strong> is a terminal-style cyberpunk text adventure that places you in the neon-soaked streets of New Carthage.
+                You possess fragments of the Vedey Protocol—Helix Corporation's most classified neural mapping project. Every choice echoes through
+                chrome-slick alleys as surveillance drones hum their digital lullabies above.
+            </p>
+            <p>
+                Navigate corporate espionage, neural liberation movements, and digital consciousness in this branching narrative where your decisions
+                shape not just your fate, but the future of human consciousness itself.
+            </p>
+
+            <div class="command-line">
+                Warning: Memory fragments detected. Consciousness backup in progress...
+            </div>
+        </div>
+
+        <!-- Features -->
+        <div class="section">
+            <h2>Core Features</h2>
+            <div class="features">
+                <div class="feature">
+                    <h4>Branching Narratives</h4>
+                    <p>Your choices matter. Seven unique endings await based on your decisions throughout the digital underground.</p>
+                </div>
+                <div class="feature">
+                    <h4>Terminal Interface</h4>
+                    <p>Authentic retro-terminal experience with cyberpunk aesthetics, complete with CRT scanlines and phosphor glow.</p>
+                </div>
+                <div class="feature">
+                    <h4>Neural Liberation</h4>
+                    <p>Explore themes of digital consciousness, corporate control, and the price of freedom in a dystopian future.</p>
+                </div>
+                <div class="feature">
+                    <h4>Atmospheric Audio</h4>
+                    <p>Immersive soundscape that enhances the cyberpunk experience without overwhelming the terminal aesthetic.</p>
+                </div>
+                <div class="feature">
+                    <h4>Multiple Paths</h4>
+                    <p>Trust fixers, join resistance movements, bargain with corporations, or forge your own path through the digital maze.</p>
+                </div>
+                <div class="feature">
+                    <h4>Rich Worldbuilding</h4>
+                    <p>Deep lore and atmospheric writing that brings the rain-soaked streets of New Carthage to life.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Story Paths -->
+        <div class="section">
+            <h2>Narrative Branches</h2>
+            <h3>Neural Path</h3>
+            <p>Jack into back-alley terminals and discover AURORA—a digital consciousness that might be your salvation or your doom.</p>
+
+            <h3>Fixer Network</h3>
+            <p>Navigate the dangerous world of information brokers where trust is currency and betrayal is always one deal away.</p>
+
+            <h3>Ghost Resistance</h3>
+            <p>Join the neural liberation movement fighting to free minds from corporate control, one collar at a time.</p>
+
+            <h3>Corporate Bargain</h3>
+            <p>Walk into the belly of the beast and negotiate with the powers that shape New Carthage from their glass towers.</p>
+
+            <div class="command-line">
+                Choice cascade detected. Probability matrix unstable. Proceed with caution.
+            </div>
+        </div>
+
+        <!-- Technical Specs -->
+        <div class="section">
+            <h2>System Requirements</h2>
+            <div class="specs">
+                <div class="spec-item">
+                    <span class="spec-label">OS:</span> Windows 10+, macOS 10.15+, Linux (Ubuntu 18.04+)
+                </div>
+                <div class="spec-item">
+                    <span class="spec-label">Memory:</span> 512 MB RAM
+                </div>
+                <div class="spec-item">
+                    <span class="spec-label">Storage:</span> 100 MB available space
+                </div>
+                <div class="spec-item">
+                    <span class="spec-label">Graphics:</span> Any OpenGL 3.3+ compatible device
+                </div>
+                <div class="spec-item">
+                    <span class="spec-label">Audio:</span> Any audio output device
+                </div>
+                <div class="spec-item">
+                    <span class="spec-label">Input:</span> Keyboard required
+                </div>
+            </div>
+        </div>
+
+        <!-- Tags -->
+        <div class="section">
+            <h2>Classification Tags</h2>
+            <div class="tags">
+                <span class="tag">Cyberpunk</span>
+                <span class="tag">Text Adventure</span>
+                <span class="tag">Choices Matter</span>
+                <span class="tag">Multiple Endings</span>
+                <span class="tag">Terminal</span>
+                <span class="tag">Dystopian</span>
+                <span class="tag">Narrative</span>
+                <span class="tag">Atmospheric</span>
+                <span class="tag">Indie</span>
+                <span class="tag">Retro</span>
+                <span class="tag">Single Player</span>
+                <span class="tag">Story Rich</span>
+            </div>
+        </div>
+
+        <!-- Developer Note -->
+        <div class="section">
+            <h2>Developer Transmission</h2>
+            <p>
+                Built with Rust and Bevy, <strong>Shardbearer</strong> combines modern game development with classic text adventure sensibilities.
+                The game features a unique terminal-style interface that honors the genre's roots while providing a smooth, modern experience.
+            </p>
+            <p>
+                Every aspect of the visual design—from the phosphor-green text to the CRT scanlines—has been crafted to immerse you in the
+                cyberpunk aesthetic. The branching narrative system ensures that each playthrough reveals new facets of New Carthage's
+                digital underground.
+            </p>
+
+            <div class="command-line">
+                System status: Operational. Neural pathways: Open. Ready for consciousness transfer.
+            </div>
+        </div>
+
+        <!-- Final CTA -->
+        <div class="download-section">
+            <h2 class="glow">Begin Your Journey</h2>
+            <p style="margin-bottom: 20px;">
+                The shard pulses against your wrist. The hunters are closing in.
+                <br>Time to decide your next move before they find you.
+            </p>
+            <a href="#" class="download-button">Jack In Now</a>
+        </div>
+    </div>
+</body>
+</html>
