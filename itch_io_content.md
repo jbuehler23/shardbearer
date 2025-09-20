@@ -55,7 +55,7 @@ Every aspect of the visual design—from the phosphor-green text to the CRT scan
 - **Input:** Keyboard required
 
 ## Tags
-cyberpunk, text-adventure, choices-matter, multiple-endings, terminal, dystopian, narrative, atmospheric, indie, retro, single-player, story-rich
+cyberpunk, shardbearer, choices-matter, multiple-endings, terminal, dystopian, narrative, atmospheric, indie, retro, single-player, story-rich
 
 ## Genre Classifications
 - Adventure
