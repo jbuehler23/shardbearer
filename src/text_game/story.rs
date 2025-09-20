@@ -39,7 +39,7 @@ pub const BANNER: &str = r#"
     ╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═════╝ ╚═════╝ ╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝
 
              ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
-             ▓                  A   N E W   C A R T H A G E   S T O R Y              ▓
+             ▓                   A   N E W   C A R T H A G E   S T O R Y           ▓
              ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
 "#;
 
@@ -75,7 +75,9 @@ pub fn build_story_from_json() -> Story {
         Ok(story_flow) => {
             // Helper function to convert StoryNodeData to StoryNode
             let convert_node = |node_data: super::story_data::StoryNodeData| -> StoryNode {
-                let ascii = node_data.ascii_art.as_ref()
+                let ascii = node_data
+                    .ascii_art
+                    .as_ref()
                     .and_then(|key| ascii_art.get(key))
                     .map(|s| s.clone());
 
@@ -84,7 +86,9 @@ pub fn build_story_from_json() -> Story {
                     title: node_data.title,
                     ascii,
                     body: node_data.body,
-                    choices: node_data.choices.into_iter()
+                    choices: node_data
+                        .choices
+                        .into_iter()
                         .map(|c| Choice {
                             text: c.text,
                             next: c.next,

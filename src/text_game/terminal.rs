@@ -231,12 +231,18 @@ fn ui_render_system(
             // Set number of choices for ending screen
             ui.num_choices = 3;
 
-            display_text.push_str("╔════════════════════════════════════════╗\n");
-            display_text.push_str(&format!(
-                "║  ENDING UNLOCKED: {}  ║\n",
-                format!("{:^20}", end.name).to_uppercase()
-            ));
-            display_text.push_str("╚════════════════════════════════════════╝\n\n");
+            // Calculate dynamic width for ending box based on actual text
+            let ending_text = format!("ENDING UNLOCKED: {}", end.name.to_uppercase());
+            let ending_box_width = ending_text.len() + 4; // +4 for "║  " and "  ║"
+            let ending_box_width = ending_box_width.max(44); // Minimum width for aesthetics
+
+            let top_ending_border = format!("╔{}╗\n", "═".repeat(ending_box_width - 2));
+            let ending_line = format!("║{:^width$}║\n", ending_text, width = ending_box_width - 2);
+            let bottom_ending_border = format!("╚{}╝\n\n", "═".repeat(ending_box_width - 2));
+
+            display_text.push_str(&top_ending_border);
+            display_text.push_str(&ending_line);
+            display_text.push_str(&bottom_ending_border);
             display_text.push_str(&format!("{}\n\n", end.summary));
 
             // Build ending choices with selection highlighting
@@ -249,14 +255,16 @@ fn ui_render_system(
                 .max()
                 .unwrap_or(0);
 
-            // Account for selection formatting: "► [1] text" vs "  1) text"
-            let ending_box_width = max_ending_text_width + 8; // "► [1] " = 6 chars + padding
+            // Account for selection formatting: " ► [1] text " vs "   1) text "
+            // With padding: " ► [1] " = 8 chars, "   1) " = 6 chars (use max)
+            // Plus the text, plus trailing space = 8 + text + 1 + extra padding
+            let ending_box_width = max_ending_text_width + 12; // 8 for prefix, 1 for suffix, 3 extra padding
             let content_width = ending_box_width - 2; // Width inside the box borders
 
-            let top_border = format!("┌─{}─┐\n", "─".repeat(ending_box_width - 2));
+            let top_border = format!("┌─{}─┐\n", "─".repeat(ending_box_width - 4));
             let what_now_line =
                 format!("│{:^width$}│\n", "What now?", width = ending_box_width - 2);
-            let bottom_border = format!("└─{}─┘\n", "─".repeat(ending_box_width - 2));
+            let bottom_border = format!("└─{}─┘\n", "─".repeat(ending_box_width - 4));
 
             display_text.push_str(&top_border);
             display_text.push_str(&what_now_line);
@@ -265,9 +273,9 @@ fn ui_render_system(
                 let is_selected = ui.selected_choice == Some(i);
                 let prefix = if is_selected { "► " } else { "  " };
                 let choice_line = if is_selected {
-                    format!("{}[{}] {}", prefix, i + 1, choice_text)
+                    format!(" {}[{}] {} ", prefix, i + 1, choice_text) // Added space padding
                 } else {
-                    format!("{}{}) {}", prefix, i + 1, choice_text)
+                    format!(" {}{}) {} ", prefix, i + 1, choice_text) // Added space padding
                 };
                 display_text.push_str(&format!(
                     "│{:<width$}│\n",
@@ -283,56 +291,71 @@ fn ui_render_system(
                 display_text.push_str("\n▶ Press ENTER to confirm selection, ESC to cancel\n");
             }
         } else {
-            // Find the max width needed for choices
-            let max_text_width = node
-                .choices
-                .iter()
-                .map(|c| c.text.len())
-                .max()
-                .unwrap_or(0)
-                .min(65); // Cap at 65 chars wide for better readability
+            // Use fixed width for consistency with story text display
+            const CHOICE_BOX_WIDTH: usize = 80;
+            let box_width = CHOICE_BOX_WIDTH;
 
-            // Calculate box width accounting for selection formatting
-            // Unselected: "  1) text" = 5 chars + text
-            // Selected: "► [1] text" = 6 chars + text (for single digit) or 7 chars (for double digit)
-            let max_choice_num_width = if node.choices.len() >= 10 { 2 } else { 1 };
-            let max_prefix_width = 2 + max_choice_num_width + 2; // "► [" + num + "] "
-            let box_width = max_text_width + max_prefix_width + 2; // +2 for left/right padding
-            let top_border = format!("┌─ CHOICES {}┐\n", "─".repeat(box_width.saturating_sub(11)));
-            let bottom_border = format!("└{}┘\n", "─".repeat(box_width));
+            // Calculate exact number of dashes needed: box_width minus the fixed parts "┌─ CHOICES ┐" (12 chars)
+            let dash_count = box_width.saturating_sub(12);
+            let top_border = format!("┌─ CHOICES {}┐\n", "─".repeat(dash_count));
+            let bottom_border = format!("└{}┘\n", "─".repeat(box_width - 2)); // -2 for corner characters
 
             // Update UI state for choices
             ui.num_choices = node.choices.len();
 
             display_text.push_str(&top_border);
             for (i, choice) in node.choices.iter().enumerate() {
-                // Wrap long text properly
-                let text = if choice.text.len() > max_text_width {
-                    let mut wrapped = choice
-                        .text
-                        .chars()
-                        .take(max_text_width - 3)
-                        .collect::<String>();
-                    wrapped.push_str("...");
-                    wrapped
-                } else {
-                    choice.text.to_string()
-                };
-
-                // Highlight selected choice
+                // Calculate available width for text after prefix
                 let is_selected = ui.selected_choice == Some(i);
-                let prefix = if is_selected { "► " } else { "  " };
-                let choice_text = if is_selected {
-                    format!("{}[{}] {}", prefix, i + 1, text)
+                let prefix_with_num = if is_selected {
+                    format!(" ► [{}] ", i + 1)
                 } else {
-                    format!("{}{}) {}", prefix, i + 1, text)
+                    format!("   {}) ", i + 1)
                 };
 
-                display_text.push_str(&format!(
-                    "│{:<width$}│\n",
-                    choice_text,
-                    width = box_width - 2
-                ));
+                // Available width = box_width - 2 (borders) - prefix length - 1 (right padding)
+                let available_width = box_width - 2 - prefix_with_num.len() - 1;
+
+                // Wrap text at word boundaries
+                let mut words = choice.text.split_whitespace();
+                let mut lines = Vec::new();
+                let mut current_line = String::new();
+
+                while let Some(word) = words.next() {
+                    if current_line.is_empty() {
+                        current_line = word.to_string();
+                    } else if current_line.len() + 1 + word.len() <= available_width {
+                        current_line.push(' ');
+                        current_line.push_str(word);
+                    } else {
+                        lines.push(current_line);
+                        current_line = word.to_string();
+                    }
+                }
+                if !current_line.is_empty() {
+                    lines.push(current_line);
+                }
+
+                // Display the choice with wrapped text
+                for (line_idx, line) in lines.iter().enumerate() {
+                    if line_idx == 0 {
+                        // First line with choice number
+                        let choice_line = format!("{}{} ", prefix_with_num, line);
+                        display_text.push_str(&format!(
+                            "│{:<width$}│\n",
+                            choice_line,
+                            width = box_width - 2
+                        ));
+                    } else {
+                        // Continuation lines with indentation
+                        let continuation = format!("       {} ", line);
+                        display_text.push_str(&format!(
+                            "│{:<width$}│\n",
+                            continuation,
+                            width = box_width - 2
+                        ));
+                    }
+                }
             }
             display_text.push_str(&bottom_border);
 
