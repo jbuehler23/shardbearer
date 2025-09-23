@@ -171,7 +171,7 @@ jobs:
           if [ '${{ inputs.deny_warnings }}' = 'true' ]; then
             RUSTFLAGS="${RUSTFLAGS:+$RUSTFLAGS }"'-Dwarnings'
           fi
-          echo "RUSTFLAGS=${RUSTFLAGS}--cfg getrandom_backend=\"wasm_js\"" >> "${GITHUB_ENV}"
+          echo "RUSTFLAGS=${RUSTFLAGS:+$RUSTFLAGS }--cfg getrandom_backend=\"wasm_js\"" >> "${GITHUB_ENV}"
 
           # macOS environment:
           if [ '${{ matrix.platform }}' = 'macos' ]; then
