@@ -123,7 +123,6 @@ jobs:
         include:
           - platform: web
             targets: wasm32-unknown-unknown
-            features: wasm_js
             package_ext: .zip
             runner: ubuntu-latest
 
