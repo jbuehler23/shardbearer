@@ -123,6 +123,7 @@ jobs:
         include:
           - platform: web
             targets: wasm32-unknown-unknown
+            features: wasm_js
             package_ext: .zip
             runner: ubuntu-latest
 
@@ -164,14 +165,14 @@ jobs:
           echo "package=${app_package_name}-"'${{ matrix.platform }}${{ matrix.package_ext }}' >> "${GITHUB_ENV}"
 
           # Rustflags:
-          RUSTFLAGS='-Zthreads=0 --cfg getrandom_backend="wasm_js"'
+          RUSTFLAGS='-Zthreads=0'
           if [ '${{ matrix.platform }}' != 'windows' ]; then
             RUSTFLAGS="${RUSTFLAGS:+$RUSTFLAGS }"'-Zshare-generics=y'
           fi
           if [ '${{ inputs.deny_warnings }}' = 'true' ]; then
             RUSTFLAGS="${RUSTFLAGS:+$RUSTFLAGS }"'-Dwarnings'
           fi
-          echo "RUSTFLAGS=${RUSTFLAGS:+$RUSTFLAGS }--cfg getrandom_backend=\"wasm_js\"" >> "${GITHUB_ENV}"
+          echo "RUSTFLAGS=${RUSTFLAGS}" >> "${GITHUB_ENV}"
 
           # macOS environment:
           if [ '${{ matrix.platform }}' = 'macos' ]; then
@@ -224,6 +225,8 @@ jobs:
 
       - name: Build and add web bundle to app (Web)
         if: ${{ env.is_platform_enabled == 'true' && matrix.platform == 'web' }}
+        env:
+          CARGO_TARGET_WASM32_UNKNOWN_UNKNOWN_RUSTFLAGS: '--cfg getrandom_backend="wasm_js"'
         run: |
           cargo binstall --locked --no-confirm --force wasm-bindgen-cli
           cargo binstall --locked --no-confirm --force wasm-opt
